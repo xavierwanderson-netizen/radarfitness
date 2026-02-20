@@ -1,47 +1,37 @@
-# synapse-price-monitor
+# 🚀 Radar Fitness (V2 - Multiplataforma)
 
-Backend simples em Node.js (ESM) para monitorar preços da Amazon e notificar via webhook do WhatsApp.
+Sistema avançado em Node.js para monitoramento de preços e notificações em tempo real.
 
-## ✅ Requisitos
-- Node.js 18+
-- Dependências: `axios` e `node-cron`
-- Compatível com Railway (start script pronto)
+## 🛠️ Escopo do Projeto
+Monitoramento automatizado de **produtos** simultâneos em três plataformas:
+- **Amazon**: Integração via Scraper com sistema de Backoff Exponencial.
+- **Shopee**: Integração via API Oficial (HMAC-SHA256).
+- **Mercado Livre**: Integração via OAuth 2.0 (Authorization Code + Refresh Token).
 
-## 📦 Instalação
-```bash
-npm install
-```
+## ✅ Requisitos e Stack
+- **Runtime**: Node.js 20+ (ES Modules)
+- **Infraestrutura**: Railway.app
+- **Persistência**: Railway Volumes (Ponto de montagem: `/.data`)
 
-## ▶️ Execução local
-```bash
-npm start
-```
+## 📦 Estrutura de Persistência Crítica
+O bot utiliza o diretório **`/.data`** no volume persistente do Railway.
+- `/.data/prices_v2.json`: Histórico de preços (Shopee/Amazon).
+- `/.data/ml_tokens_v2.json`: Tokens de acesso do Mercado Livre.
+**AVISO:** Não altere o caminho absoluto `/.data` nos códigos para não perder a persistência de longo prazo.
 
-## ⚙️ Variáveis de ambiente
-Defina estas variáveis no Railway ou no seu `.env` local:
+## ⚙️ Configuração (Variáveis de Ambiente)
+### Essenciais
+- `TELEGRAM_BOT_TOKEN`: Token do BotFather.
+- `TELEGRAM_CHAT_ID`: ID do canal de ofertas.
+- `CHECK_INTERVAL_MINUTES`: Tempo entre ciclos (Padrão: 60).
+- `DISCOUNT_THRESHOLD_PERCENT`: % mínimo para disparar alerta (Padrão: 12).
 
-- `AMAZON_ACCESS_KEY`
-- `AMAZON_SECRET_KEY`
-- `AMAZON_PARTNER_TAG`
-- `AMAZON_REGION`
-- `CHECK_INTERVAL_MINUTES` (ex: `30`)
-- `WHATSAPP_WEBHOOK_URL`
+### Mercado Livre
+- `ML_CLIENT_ID` / `ML_CLIENT_SECRET`: Credenciais da aplicação.
+- `ML_INITIAL_CODE`: Código TG-... (usado apenas uma vez na partida a frio).
+- `RESET_ML_TOKENS`: Defina como `true` para deletar o arquivo de tokens e forçar re-autenticação.
 
-## 🧠 Como funciona
-1. Lê os produtos de `products.json` (ASIN + título).
-2. Consulta o preço (simulado no momento, até integrar a assinatura da PAAPI).
-3. Compara com o último preço salvo em memória.
-4. Se o preço cair, envia uma notificação para o WhatsApp.
-5. Executa automaticamente a cada X minutos.
-
-## 🧩 Estrutura dos arquivos
-- `index.js`: orquestrador com cron
-- `amazon.js`: consulta de preço (placeholder)
-- `notifier.js`: envio para WhatsApp
-- `store.js`: armazenamento simples em memória
-- `products.json`: lista de ASINs
-
-## 🚂 Railway (resumo)
-1. Conecte o repositório
-2. Configure as variáveis de ambiente
-3. Deploy automático com `npm start`
+## ⚠️ Regras de Ouro (NÃO ALTERAR)
+1. **Delays de Loop**: O `index.js` gerencia o tempo entre requisições. Alterar esses valores pode causar banimento de IP por comportamento robótico.
+2. **Sistema de Exportação**: Todas as funções de fetch devem ser exportadas nomeadamente para o `index.js`.
+3. **Formatador de Mensagem**: O `notifier.js` já está configurado para moeda brasileira (R$) e emojis de nível de oferta.
